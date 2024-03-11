@@ -1,0 +1,92 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
+
+// Define a basic block structure
+struct Block {
+    int index;
+    std::string data;
+    std::string timestamp;
+    std::string previousHash;
+    std::string hash;
+};
+
+// Define a simple blockchain class
+class Blockchain {
+private:
+    std::vector<Block> chain;
+
+public:
+    Blockchain() {
+        // Initialize the blockchain with a genesis block
+        chain.push_back(createGenesisBlock());
+    }
+
+    // Function to create the genesis block
+    Block createGenesisBlock() {
+        Block genesisBlock;
+        genesisBlock.index = 0;
+        genesisBlock.data = "Genesis Block";
+        genesisBlock.timestamp = getCurrentTimestamp();
+        genesisBlock.previousHash = "0";
+        genesisBlock.hash = calculateHash(genesisBlock);
+        return genesisBlock;
+    }
+
+    // Function to generate the current timestamp
+    std::string getCurrentTimestamp() {
+        std::time_t now = std::time(nullptr);
+        std::tm* localTime = std::localtime(&now);
+        std::stringstream ss;
+        ss << std::put_time(localTime, "%Y-%m-%d %H:%M:%S");
+        return ss.str();
+    }
+
+    // Function to calculate the hash of a block
+    std::string calculateHash(const Block& block) {
+        // Hash calculation logic (e.g., using SHA256)
+        // For simplicity, let's just return a stringified version of block data
+        return std::to_string(block.index) + block.data + block.timestamp + block.previousHash;
+    }
+
+    // Function to add a new block to the blockchain
+    void addBlock(const std::string& data) {
+        const Block& previousBlock = chain.back();
+        Block newBlock;
+        newBlock.index = previousBlock.index + 1;
+        newBlock.data = data;
+        newBlock.timestamp = getCurrentTimestamp();
+        newBlock.previousHash = previousBlock.hash;
+        newBlock.hash = calculateHash(newBlock);
+        chain.push_back(newBlock);
+    }
+
+    // Function to print the blockchain
+    void printChain() {
+        for (const Block& block : chain) {
+            std::cout << "Index: " << block.index << std::endl;
+            std::cout << "Data: " << block.data << std::endl;
+            std::cout << "Timestamp: " << block.timestamp << std::endl;
+            std::cout << "Previous Hash: " << block.previousHash << std::endl;
+            std::cout << "Hash: " << block.hash << std::endl;
+            std::cout << std::endl;
+        }
+    }
+};
+
+int main() {
+    Blockchain coffeeBlockchain;
+
+    // Adding some blocks to the blockchain
+    coffeeBlockchain.addBlock("Buyer: John, Seller: Jane, Amount: $100");
+    coffeeBlockchain.addBlock("Buyer: Alice, Seller: Bob, Amount: $150");
+    coffeeBlockchain.addBlock("Buyer: Carol, Seller: David, Amount: $200");
+
+    // Print the blockchain
+    coffeeBlockchain.printChain();
+
+    return 0;
+}
