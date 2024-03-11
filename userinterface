@@ -1,0 +1,56 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+// Define a structure to represent a coffee listing
+struct CoffeeListing {
+    std::string name;
+    double price;
+    std::string origin;
+    // Additional information can be added here
+};
+
+// Define a class to represent the specialty coffee platform
+class CoffeePlatform {
+private:
+    std::vector<CoffeeListing> listings;
+
+public:
+    // Function to add a coffee listing
+    void addListing(const std::string& name, double price, const std::string& origin) {
+        listings.push_back({name, price, origin});
+    }
+
+    // Function to display all coffee listings
+    void displayListings() {
+        std::cout << "Coffee Listings:" << std::endl;
+        for (const CoffeeListing& listing : listings) {
+            std::cout << "Name: " << listing.name << std::endl;
+            std::cout << "Price: $" << listing.price << std::endl;
+            std::cout << "Origin: " << listing.origin << std::endl;
+            std::cout << std::endl;
+        }
+    }
+
+    // Function to facilitate a trade
+    void trade(const std::string& buyer, const std::string& seller, const std::string& coffeeName) {
+        // Implementation of trade logic
+        std::cout << "Trade executed: " << buyer << " bought " << coffeeName << " from " << seller << std::endl;
+    }
+};
+
+int main() {
+    CoffeePlatform platform;
+
+    // Adding some coffee listings
+    platform.addListing("Ethiopian Yirgacheffe", 15.99, "Ethiopia");
+    platform.addListing("Colombian Supremo", 12.99, "Colombia");
+
+    // Display coffee listings
+    platform.displayListings();
+
+    // Example trade
+    platform.trade("Alice", "Bob", "Ethiopian Yirgacheffe");
+
+    return 0;
+}
