@@ -1,0 +1,53 @@
+#include <iostream>
+#include <string>
+#include <unordered_map>
+
+// Define a simple user structure
+struct User {
+    std::string username;
+    std::string password;
+    // Additional user information can be added here
+};
+
+// Define a simple authentication manager class
+class AuthManager {
+private:
+    std::unordered_map<std::string, User> users;
+
+public:
+    // Function to register a new user
+    void registerUser(const std::string& username, const std::string& password) {
+        if (users.find(username) == users.end()) {
+            User newUser;
+            newUser.username = username;
+            newUser.password = password;
+            users[username] = newUser;
+            std::cout << "User registered successfully!" << std::endl;
+        } else {
+            std::cout << "Username already exists!" << std::endl;
+        }
+    }
+
+    // Function to authenticate a user
+    bool authenticate(const std::string& username, const std::string& password) {
+        if (users.find(username) != users.end()) {
+            return users[username].password == password;
+        }
+        return false;
+    }
+};
+
+int main() {
+    AuthManager authManager;
+
+    // Registering users
+    authManager.registerUser("alice", "password123");
+    authManager.registerUser("bob", "securepass");
+
+    // Authentication example
+    std::cout << "Authentication results:" << std::endl;
+    std::cout << "Alice: " << (authManager.authenticate("alice", "password123") ? "Authenticated" : "Not Authenticated") << std::endl;
+    std::cout << "Bob: " << (authManager.authenticate("bob", "password123") ? "Authenticated" : "Not Authenticated") << std::endl;
+
+    return 0;
+}
