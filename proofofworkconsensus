@@ -1,0 +1,139 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
+#include <openssl/sha.h>
+
+// Define a simple transaction structure
+struct Transaction {
+    std::string sender;
+    std::string receiver;
+    double amount;
+    std::string timestamp;
+};
+
+// Define a basic block structure
+struct Block {
+    int index;
+    std::string previousHash;
+    std::string hash;
+    std::vector<Transaction> transactions;
+    time_t timestamp;
+    int nonce;
+};
+
+// Define a simple blockchain class
+class Blockchain {
+private:
+    std::vector<Block> chain;
+    int difficulty; // Difficulty for proof-of-work
+
+public:
+    Blockchain(int diff = 4) : difficulty(diff) {
+        // Initialize the blockchain with a genesis block
+        chain.push_back(createGenesisBlock());
+    }
+
+    // Function to create the genesis block
+    Block createGenesisBlock() {
+        Block genesisBlock;
+        genesisBlock.index = 0;
+        genesisBlock.previousHash = "0";
+        genesisBlock.timestamp = time(nullptr);
+        genesisBlock.nonce = 0;
+        genesisBlock.hash = calculateHash(genesisBlock);
+        return genesisBlock;
+    }
+
+    // Function to calculate the hash of a block
+    std::string calculateHash(const Block& block) {
+        std::stringstream ss;
+        ss << block.index << block.previousHash << block.timestamp << block.nonce;
+
+        // Calculate hash of transactions
+        for (const Transaction& tx : block.transactions) {
+            ss << tx.sender << tx.receiver << tx.amount << tx.timestamp;
+        }
+
+        // Use SHA-256 for hash calculation
+        unsigned char hash[SHA256_DIGEST_LENGTH];
+        SHA256_CTX sha256;
+        SHA256_Init(&sha256);
+        SHA256_Update(&sha256, ss.str().c_str(), ss.str().length());
+        SHA256_Final(hash, &sha256);
+
+        std::stringstream hashString;
+        for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+            hashString << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+        }
+
+        return hashString.str();
+    }
+
+    // Function to add a new block to the blockchain
+    void addBlock(const std::vector<Transaction>& transactions) {
+        const Block& previousBlock = chain.back();
+        Block newBlock;
+        newBlock.index = previousBlock.index + 1;
+        newBlock.previousHash = previousBlock.hash;
+        newBlock.transactions = transactions;
+        newBlock.timestamp = time(nullptr);
+        newBlock.nonce = 0;
+        newBlock.hash = mineBlock(newBlock); // Mine the block
+        chain.push_back(newBlock);
+    }
+
+    // Function to mine a block (Proof-of-Work)
+    std::string mineBlock(Block& block) {
+        std::string target(difficulty, '0'); // Target hash with required number of leading zeros
+
+        while (true) {
+            block.nonce++; // Increment nonce for each attempt
+            std::string hash = calculateHash(block);
+            if (hash.substr(0, difficulty) == target) { // Check if the hash meets the difficulty requirement
+                return hash;
+            }
+        }
+    }
+
+    // Function to print the blockchain
+    void printChain() {
+        for (const Block& block : chain) {
+            std::cout << "Index: " << block.index << std::endl;
+            std::cout << "Timestamp: " << std::asctime(std::localtime(&block.timestamp));
+            std::cout << "Previous Hash: " << block.previousHash << std::endl;
+            std::cout << "Hash: " << block.hash << std::endl;
+
+            std::cout << "Transactions:" << std::endl;
+            for (const Transaction& tx : block.transactions) {
+                std::cout << "  Sender: " << tx.sender << std::endl;
+                std::cout << "  Receiver: " << tx.receiver << std::endl;
+                std::cout << "  Amount: " << tx.amount << std::endl;
+                std::cout << "  Timestamp: " << tx.timestamp << std::endl;
+                std::cout << std::endl;
+            }
+
+            std::cout << std::endl;
+        }
+    }
+};
+
+int main() {
+    Blockchain coffeeBlockchain;
+
+    // Sample transactions
+    std::vector<Transaction> transactions;
+    transactions.push_back({"Alice", "Bob", 100.0, "2024-03-11 10:00:00"});
+    transactions.push_back({"Bob", "Carol", 50.0, "2024-03-11 10:30:00"});
+    transactions.push_back({"Carol", "David", 75.0, "2024-03-11 11:00:00"});
+
+    // Add transactions to the blockchain
+    coffeeBlockchain.addBlock(transactions);
+
+    // Print the blockchain
+    coffeeBlockchain.printChain();
+
+    return 0;
+}
