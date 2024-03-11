@@ -1,27 +1,43 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.0;
 
-//like a class for smart contracts
-contract MyContract {  
-    string public hello = "Hit Mom";
-    address payable public seller;
-    address payable public buyer;
-
-//construct custom data types usually to represent different entities
-    struct Order {
-        string description;
-        bool completed;
+contract SpecialtyCoffeeDapp {
+    struct Coffee {
+        address producer;
+        string name;
+        uint256 quantity;
+        uint256 price; // in wei
+        bool available;
     }
 
-//define executable blocks of code
-    function confirmOrder() public {
-        buyer = payable(msg.sender);
+    mapping(uint256 => Coffee) public coffees;
+    uint256 public nextCoffeeId;
+
+    event CoffeeListed(uint256 id, address indexed producer, string name, uint256 quantity, uint256 price);
+    event CoffeePurchased(uint256 id, address indexed buyer, uint256 quantity);
+
+    function listCoffee(string memory _name, uint256 _quantity, uint256 _price) external {
+        require(_quantity > 0, "Quantity must be greater than zero");
+        require(_price > 0, "Price must be greater than zero");
+
+        coffees[nextCoffeeId] = Coffee(msg.sender, _name, _quantity, _price, true);
+        emit CoffeeListed(nextCoffeeId, msg.sender, _name, _quantity, _price);
+        nextCoffeeId++;
     }
 
-//constructor - called once when contract is created
-    constructor(string memory _text) {
-        hello = _text;
-    }
+    function purchaseCoffee(uint256 _id, uint256 _quantity) external payable {
+        Coffee storage coffee = coffees[_id];
+        require(coffee.available, "Coffee is not available");
+        require(_quantity > 0 && _quantity <= coffee.quantity, "Invalid quantity");
+        require(msg.value == coffee.price * _quantity, "Incorrect amount sent");
 
+        coffee.quantity -= _quantity;
+        if (coffee.quantity == 0) {
+            coffee.available = false;
+        }
+
+        payable(coffee.producer).transfer(msg.value); // Send payment to the producer
+        emit CoffeePurchased(_id, msg.sender, _quantity);
+    }
 }
 
