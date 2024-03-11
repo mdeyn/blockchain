@@ -90,3 +90,14 @@ int main() {
 
     return 0;
 }
+
+/* This code demonstrates a simple blockchain implementation in C++. 
+It defines a Block structure representing each block in the blockchain and a 
+Blockchain class to manage the chain. In this example, we use a simple hash calculation 
+for demonstration purposes, but in a real-world scenario, you would use cryptographic 
+hash functions like SHA-256.
+
+This example does not include advanced features like network consensus algorithms, 
+proof-of-work, user authentication, or a user interface. Implementing a full-fledged 
+specialty coffee trading platform with blockchain would require much more complex 
+code and integration with blockchain technologies like Ethereum or Hyperledger Fabric. */
